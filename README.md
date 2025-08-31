@@ -2,6 +2,7 @@
 
 [![Hex.pm](https://img.shields.io/hexpm/v/theme_ex.svg)](https://hex.pm/packages/theme_ex)
 [![Documentation](https://img.shields.io/badge/docs-hexdocs-blue.svg)](https://hexdocs.pm/theme_ex)
+[![CI](https://github.com/pepicrft/theme_ex/workflows/theme_ex/badge.svg)](https://github.com/pepicrft/theme_ex/actions)
 [![License](https://img.shields.io/hexpm/l/theme_ex.svg)](https://github.com/pepicrft/theme_ex/blob/main/LICENSE)
 
 An Elixir package that implements data structures for the [Theme UI theme specification](https://theme-ui.com/theme-spec) and provides utilities for parsing, validation, and CSS variable generation.
