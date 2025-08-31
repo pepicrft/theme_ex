@@ -26,13 +26,15 @@ defmodule ThemeEx.MixProject do
   defp deps do
     [
       {:jason, "~> 1.4"},
-      {:ex_doc, "~> 0.31", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.31", only: :dev, runtime: false},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:quokka, "~> 2.11", only: [:dev, :test], runtime: false}
     ]
   end
 
   defp description do
     """
-    An Elixir package that implements data structures for the Theme UI theme specification 
+    An Elixir package that implements data structures for the Theme UI theme specification
     and provides utilities for parsing, validation, and CSS variable generation.
     """
   end

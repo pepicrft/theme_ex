@@ -1,5 +1,6 @@
 defmodule ThemeExTest do
   use ExUnit.Case
+
   doctest ThemeEx
 
   test "greets the world" do
