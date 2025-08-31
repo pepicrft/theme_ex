@@ -7,7 +7,11 @@ defmodule ThemeEx.MixProject do
       version: "0.1.0",
       elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      description: description(),
+      package: package(),
+      docs: docs(),
+      source_url: "https://github.com/pepicrft/theme_ex"
     ]
   end
 
@@ -21,8 +25,35 @@ defmodule ThemeEx.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
+      {:jason, "~> 1.4"},
+      {:ex_doc, "~> 0.31", only: :dev, runtime: false}
+    ]
+  end
+
+  defp description do
+    """
+    An Elixir package that implements data structures for the Theme UI theme specification 
+    and provides utilities for parsing, validation, and CSS variable generation.
+    """
+  end
+
+  defp package do
+    [
+      name: "theme_ex",
+      licenses: ["MIT"],
+      links: %{
+        "GitHub" => "https://github.com/pepicrft/theme_ex",
+        "Theme UI Spec" => "https://theme-ui.com/theme-spec"
+      },
+      maintainers: ["Pedro Piñera"],
+      files: ~w(lib .formatter.exs mix.exs README.md LICENSE)
+    ]
+  end
+
+  defp docs do
+    [
+      main: "ThemeEx",
+      source_url: "https://github.com/pepicrft/theme_ex"
     ]
   end
 end
