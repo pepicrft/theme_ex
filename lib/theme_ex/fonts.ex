@@ -1,7 +1,7 @@
 defmodule ThemeEx.Fonts do
   @moduledoc """
   Font family definitions for Theme UI themes.
-  
+
   This module defines font stacks used throughout the theme for different
   text elements, following the Theme UI specification for typography.
 

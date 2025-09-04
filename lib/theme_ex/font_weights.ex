@@ -1,7 +1,7 @@
 defmodule ThemeEx.FontWeights do
   @moduledoc """
   Font weight definitions for Theme UI themes.
-  
+
   This module defines font weights used for different text elements,
   providing semantic naming for consistent typography weight scales.
 

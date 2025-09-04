@@ -1,7 +1,7 @@
 defmodule ThemeEx.Colors do
   @moduledoc """
   Color palette structure for Theme UI themes.
-  
+
   This module defines the color system following the Theme UI specification,
   supporting semantic colors, color scales, and multiple color modes for
   implementing features like dark/light themes.

@@ -1,7 +1,7 @@
 defmodule ThemeEx.Theme do
   @moduledoc """
   Main theme structure based on the Theme UI specification.
-  
+
   This module defines the complete theme structure including colors, fonts,
   typography scales, breakpoints, and other design tokens following the
   Theme UI specification (https://theme-ui.com/theme-spec).

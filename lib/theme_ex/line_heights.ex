@@ -1,7 +1,7 @@
 defmodule ThemeEx.LineHeights do
   @moduledoc """
   Line height definitions for Theme UI themes.
-  
+
   This module defines line heights used for different text elements,
   providing semantic naming for consistent typography vertical spacing.
 

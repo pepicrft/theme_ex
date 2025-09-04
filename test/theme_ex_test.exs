@@ -1,8 +1,9 @@
 defmodule ThemeExTest do
   use ExUnit.Case
-  doctest ThemeEx
 
   alias ThemeEx.{Theme, Colors, Fonts, FontWeights, LineHeights}
+
+  doctest ThemeEx
 
   describe "from_json/1" do
     test "parses valid JSON theme" do
@@ -138,9 +139,9 @@ defmodule ThemeExTest do
       primary_schema = colors_schema["properties"]["primary"]
 
       assert primary_schema["oneOf"] == [
-        %{"type" => "string"},
-        %{"type" => "array", "items" => %{"type" => "string"}}
-      ]
+               %{"type" => "string"},
+               %{"type" => "array", "items" => %{"type" => "string"}}
+             ]
     end
   end
 

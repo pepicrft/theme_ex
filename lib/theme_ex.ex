@@ -45,9 +45,8 @@ defmodule ThemeEx do
   """
   @spec from_json(String.t()) :: {:ok, Theme.t()} | {:error, term()}
   def from_json(json_string) when is_binary(json_string) do
-    with {:ok, data} <- Jason.decode(json_string),
-         {:ok, theme} <- from_map(data) do
-      {:ok, theme}
+    with {:ok, data} <- Jason.decode(json_string) do
+      from_map(data)
     end
   end
 
@@ -64,26 +63,25 @@ defmodule ThemeEx do
   """
   @spec from_map(map()) :: {:ok, Theme.t()} | {:error, term()}
   def from_map(data) when is_map(data) do
-    try do
-      theme = %Theme{
-        colors: parse_colors(data["colors"]),
-        fonts: parse_fonts(data["fonts"]),
-        fontWeights: parse_font_weights(data["fontWeights"]),
-        lineHeights: parse_line_heights(data["lineHeights"]),
-        fontSizes: data["fontSizes"],
-        space: data["space"],
-        sizes: data["sizes"],
-        radii: data["radii"],
-        shadows: data["shadows"],
-        zIndices: data["zIndices"],
-        breakpoints: data["breakpoints"],
-        styles: data["styles"],
-        variants: data["variants"]
-      }
-      {:ok, theme}
-    rescue
-      e -> {:error, e}
-    end
+    theme = %Theme{
+      colors: parse_colors(data["colors"]),
+      fonts: parse_fonts(data["fonts"]),
+      fontWeights: parse_font_weights(data["fontWeights"]),
+      lineHeights: parse_line_heights(data["lineHeights"]),
+      fontSizes: data["fontSizes"],
+      space: data["space"],
+      sizes: data["sizes"],
+      radii: data["radii"],
+      shadows: data["shadows"],
+      zIndices: data["zIndices"],
+      breakpoints: data["breakpoints"],
+      styles: data["styles"],
+      variants: data["variants"]
+    }
+
+    {:ok, theme}
+  rescue
+    e -> {:error, e}
   end
 
   @doc """
@@ -99,17 +97,18 @@ defmodule ThemeEx do
   """
   @spec to_css_variables(Theme.t()) :: String.t()
   def to_css_variables(%Theme{} = theme) do
-    css_vars = []
-    |> add_colors_css(theme.colors)
-    |> add_fonts_css(theme.fonts)
-    |> add_font_weights_css(theme.fontWeights)
-    |> add_line_heights_css(theme.lineHeights)
-    |> add_scale_css("fontSizes", theme.fontSizes)
-    |> add_scale_css("space", theme.space)
-    |> add_scale_css("sizes", theme.sizes)
-    |> add_scale_css("radii", theme.radii)
-    |> add_scale_css("shadows", theme.shadows)
-    |> add_scale_css("breakpoints", theme.breakpoints)
+    css_vars =
+      []
+      |> add_colors_css(theme.colors)
+      |> add_fonts_css(theme.fonts)
+      |> add_font_weights_css(theme.fontWeights)
+      |> add_line_heights_css(theme.lineHeights)
+      |> add_scale_css("fontSizes", theme.fontSizes)
+      |> add_scale_css("space", theme.space)
+      |> add_scale_css("sizes", theme.sizes)
+      |> add_scale_css("radii", theme.radii)
+      |> add_scale_css("shadows", theme.shadows)
+      |> add_scale_css("breakpoints", theme.breakpoints)
 
     ":root {\n" <> Enum.join(css_vars, "\n") <> "\n}"
   end
@@ -206,7 +205,7 @@ defmodule ThemeEx do
   def validate(%Theme{} = theme) do
     theme_map = to_map(theme)
     schema = json_schema()
-    
+
     case validate_against_schema(theme_map, schema) do
       {:ok, _} -> {:ok, theme}
       {:error, errors} -> {:error, errors}
@@ -216,21 +215,25 @@ defmodule ThemeEx do
   # Private functions
 
   defp parse_colors(nil), do: nil
+
   defp parse_colors(data) when is_map(data) do
     struct(Colors, atomize_keys(data))
   end
 
   defp parse_fonts(nil), do: nil
+
   defp parse_fonts(data) when is_map(data) do
     struct(Fonts, atomize_keys(data))
   end
 
   defp parse_font_weights(nil), do: nil
+
   defp parse_font_weights(data) when is_map(data) do
     struct(FontWeights, atomize_keys(data))
   end
 
   defp parse_line_heights(nil), do: nil
+
   defp parse_line_heights(data) when is_map(data) do
     struct(LineHeights, atomize_keys(data))
   end
@@ -240,54 +243,75 @@ defmodule ThemeEx do
   end
 
   defp add_colors_css(css_vars, nil), do: css_vars
+
   defp add_colors_css(css_vars, %Colors{} = colors) do
     colors
     |> Map.from_struct()
     |> Enum.reduce(css_vars, fn
-      {_, nil}, acc -> acc
-      {:modes, modes}, acc when is_map(modes) -> acc
-      {key, value}, acc -> 
+      {_, nil}, acc ->
+        acc
+
+      {:modes, modes}, acc when is_map(modes) ->
+        acc
+
+      {key, value}, acc ->
         [format_css_var("colors", key, value) | acc]
     end)
   end
 
   defp add_fonts_css(css_vars, nil), do: css_vars
+
   defp add_fonts_css(css_vars, %Fonts{} = fonts) do
     fonts
     |> Map.from_struct()
     |> Enum.reduce(css_vars, fn
-      {_, nil}, acc -> acc
-      {:custom, _}, acc -> acc
-      {key, value}, acc -> 
+      {_, nil}, acc ->
+        acc
+
+      {:custom, _}, acc ->
+        acc
+
+      {key, value}, acc ->
         [format_css_var("fonts", key, value) | acc]
     end)
   end
 
   defp add_font_weights_css(css_vars, nil), do: css_vars
+
   defp add_font_weights_css(css_vars, %FontWeights{} = font_weights) do
     font_weights
     |> Map.from_struct()
     |> Enum.reduce(css_vars, fn
-      {_, nil}, acc -> acc
-      {:custom, _}, acc -> acc
-      {key, value}, acc -> 
+      {_, nil}, acc ->
+        acc
+
+      {:custom, _}, acc ->
+        acc
+
+      {key, value}, acc ->
         [format_css_var("fontWeights", key, value) | acc]
     end)
   end
 
   defp add_line_heights_css(css_vars, nil), do: css_vars
+
   defp add_line_heights_css(css_vars, %LineHeights{} = line_heights) do
     line_heights
     |> Map.from_struct()
     |> Enum.reduce(css_vars, fn
-      {_, nil}, acc -> acc
-      {:custom, _}, acc -> acc
-      {key, value}, acc -> 
+      {_, nil}, acc ->
+        acc
+
+      {:custom, _}, acc ->
+        acc
+
+      {key, value}, acc ->
         [format_css_var("lineHeights", key, value) | acc]
     end)
   end
 
   defp add_scale_css(css_vars, _key, nil), do: css_vars
+
   defp add_scale_css(css_vars, key, values) when is_list(values) do
     values
     |> Enum.with_index()
@@ -295,6 +319,7 @@ defmodule ThemeEx do
       [format_css_var(key, index, value) | acc]
     end)
   end
+
   defp add_scale_css(css_vars, _key, _value), do: css_vars
 
   defp format_css_var(category, key, value) do
@@ -305,6 +330,7 @@ defmodule ThemeEx do
   defp format_css_value(value) when is_list(value) do
     Enum.join(value, ", ")
   end
+
   defp format_css_value(value), do: to_string(value)
 
   defp colors_schema do
@@ -403,9 +429,13 @@ defmodule ThemeEx do
     theme
     |> Map.from_struct()
     |> Enum.reduce(%{}, fn
-      {_, nil}, acc -> acc
-      {key, %struct_type{} = value}, acc when struct_type in [Colors, Fonts, FontWeights, LineHeights] ->
+      {_, nil}, acc ->
+        acc
+
+      {key, %struct_type{} = value}, acc
+      when struct_type in [Colors, Fonts, FontWeights, LineHeights] ->
         Map.put(acc, Atom.to_string(key), struct_to_map(value))
+
       {key, value}, acc ->
         Map.put(acc, Atom.to_string(key), value)
     end)
@@ -437,7 +467,7 @@ defmodule ThemeEx do
 
   defp validate_object(data, schema) when is_map(data) do
     properties = schema["properties"] || %{}
-    
+
     properties
     |> Enum.flat_map(fn {key, prop_schema} ->
       case Map.get(data, key) do
@@ -446,16 +476,18 @@ defmodule ThemeEx do
       end
     end)
   end
+
   defp validate_object(_, _), do: ["Expected object"]
 
   defp validate_array(data, schema) when is_list(data) do
     items_schema = schema["items"]
-    
+
     data
     |> Enum.flat_map(fn item ->
       do_validate_schema(item, items_schema)
     end)
   end
+
   defp validate_array(_, _), do: ["Expected array"]
 
   defp validate_primitive(data, schema) do
@@ -472,9 +504,9 @@ defmodule ThemeEx do
   defp validate_type(_, expected), do: ["Expected #{expected}"]
 
   defp validate_one_of(data, schemas) do
-    case Enum.any?(schemas, fn schema -> 
-      do_validate_schema(data, schema) == [] 
-    end) do
+    case Enum.any?(schemas, fn schema ->
+           do_validate_schema(data, schema) == []
+         end) do
       true -> []
       false -> ["Value does not match any allowed schema"]
     end
