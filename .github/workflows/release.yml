@@ -86,7 +86,7 @@ jobs:
           git-cliff --tag ${{ steps.version.outputs.tag }} > CHANGELOG.md
 
           # Generate release notes (unreleased changes only)
-          git-cliff --unreleased --strip all > RELEASE_NOTES.md
+          git-cliff --unreleased --strip all | tail -n +3 > RELEASE_NOTES.md
 
       - name: Commit changelog
         if: steps.version.outputs.should_release == 'true'

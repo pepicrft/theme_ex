@@ -1,5 +1,3 @@
-## [unreleased]
-
 ### 🚀 Features
 
 - Add automated CI/CD pipeline with git-cliff and conventional commits
