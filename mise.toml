@@ -1,6 +1,7 @@
 [tools]
 elixir = "latest"
 erlang = "latest"
+git-cliff = "latest"
 
 [settings]
 lockfile = true

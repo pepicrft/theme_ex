@@ -1,0 +1,148 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  # First run existing CI to ensure quality
+  ci:
+    uses: ./.github/workflows/theme_ex.yml
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: ci
+    if: github.ref == 'refs/heads/main'
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+      should_release: ${{ steps.version.outputs.should_release }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Need full history for git-cliff
+
+      - uses: jdx/mise-action@v2
+
+      - name: Check if release is needed and get next version
+        id: version
+        run: |
+          # Use git-cliff to check if there are releasable changes
+          if git-cliff --unreleased --strip all | grep -q "### "; then
+            echo "Releasable commits found"
+
+            # Try to get the next version using git-cliff's bump feature
+            if NEXT_VERSION=$(git-cliff --bumped-version 2>/dev/null); then
+              echo "Git-cliff determined next version: $NEXT_VERSION"
+            else
+              # Fallback: get current version from mix.exs and bump patch
+              CURRENT_VERSION=$(grep 'version:' mix.exs | sed 's/.*version: "\([^"]*\)".*/\1/')
+              echo "Using current version from mix.exs: $CURRENT_VERSION"
+
+              # Simple patch bump
+              IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
+              MAJOR=${VERSION_PARTS[0]}
+              MINOR=${VERSION_PARTS[1]}
+              PATCH=${VERSION_PARTS[2]}
+              PATCH=$((PATCH + 1))
+              NEXT_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+
+              echo "Bumped to next version: $NEXT_VERSION"
+            fi
+
+            NEW_TAG="v${NEXT_VERSION}"
+
+            echo "Next version: $NEXT_VERSION"
+            echo "Next tag: $NEW_TAG"
+
+            echo "should_release=true" >> $GITHUB_OUTPUT
+            echo "version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+            echo "tag=$NEW_TAG" >> $GITHUB_OUTPUT
+          else
+            echo "No releasable commits found"
+            echo "should_release=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update version in mix.exs
+        if: steps.version.outputs.should_release == 'true'
+        run: |
+          sed -i "s/version: \"[^\"]*\"/version: \"${{ steps.version.outputs.version }}\"/" mix.exs
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add mix.exs
+          git commit -m "chore(release): bump version to ${{ steps.version.outputs.version }}"
+
+      - name: Generate changelog
+        if: steps.version.outputs.should_release == 'true'
+        run: |
+          # Generate changelog for the new version
+          git-cliff --tag ${{ steps.version.outputs.tag }} > CHANGELOG.md
+
+          # Generate release notes (unreleased changes only)
+          git-cliff --unreleased --strip all > RELEASE_NOTES.md
+
+      - name: Commit changelog
+        if: steps.version.outputs.should_release == 'true'
+        run: |
+          git add CHANGELOG.md
+          git commit -m "chore(release): update changelog for ${{ steps.version.outputs.version }}"
+
+      - name: Create and push tag
+        if: steps.version.outputs.should_release == 'true'
+        run: |
+          git tag ${{ steps.version.outputs.tag }}
+          git push origin main --tags
+
+      - name: Create GitHub Release
+        if: steps.version.outputs.should_release == 'true'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          release_name: Release ${{ steps.version.outputs.tag }}
+          body_path: RELEASE_NOTES.md
+          draft: false
+          prerelease: false
+
+  publish:
+    name: Publish to Hex
+    runs-on: ubuntu-latest
+    needs: release
+    if: needs.release.outputs.should_release == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release.outputs.tag }}
+
+      - uses: jdx/mise-action@v2
+
+      - name: Restore dependencies cache
+        uses: actions/cache@v4
+        with:
+          path: deps
+          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-mix-
+
+      - name: Install dependencies
+        run: mix deps.get
+
+      - name: Compile
+        run: mix compile
+
+      - name: Run tests
+        run: mix test
+
+      - name: Publish to Hex
+        env:
+          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+        run: |
+          mix hex.publish --yes
