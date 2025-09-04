@@ -1,0 +1,28 @@
+name: Test Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: jdx/mise-action@v2
+
+      - name: Test git-cliff
+        run: |
+          echo "Testing git-cliff..."
+          git-cliff --version
+          echo "Checking for releasable commits..."
+          if git-cliff --unreleased --strip all | grep -q "### "; then
+            echo "Found releasable commits"
+            NEXT_VERSION=$(git-cliff --bumped-version)
+            echo "Next version would be: $NEXT_VERSION"
+          else
+            echo "No releasable commits found"
+          fi
