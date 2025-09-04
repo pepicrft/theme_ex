@@ -1,13 +1,10 @@
 ### 🚀 Features
 
-- Add automated CI/CD pipeline with git-cliff and conventional commits
+- Trigger automated release with fixed workflow
+- Add test workflow for debugging
+- Force release 0.3.0 to test automated workflow
 
 ### 🐛 Bug Fixes
 
-- Format code according to Elixir standards
-- Update GitHub release creation to use gh CLI instead of deprecated action
-
-### ⚙️ Miscellaneous Tasks
-
-- Trigger release workflow
+- Remove [unreleased] header from release notes generation
 
